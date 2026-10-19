@@ -66,6 +66,5 @@ jobs:
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: '🤖 [Bot] Auto-format code & fix syntax errors'
-          commit_user_name: 'protech-bot'
-          commit_user_email: 'minhduc290613@proton.me'
-          commit_author: 'protech-bot <minhduc290613@proton.me>'
+          commit_user_name: 'Protech BOT'
+          commit_user_email: '170188739+protech-bot@users.noreply.github.com'
