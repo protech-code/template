@@ -1,4 +1,4 @@
-name: Auto Code Formatter Bot
+name: Auto Code Formatter & Syntax Fixer Bot
 
 on:
   push:
@@ -11,26 +11,26 @@ on:
       - master
 
 jobs:
-  format:
-    name: Format Code Automatically
+  format-and-fix:
+    name: Auto Format & Fix Syntax Errors
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Checkout mã nguồn bằng PAT của Tài khoản phụ
+      # 1. Checkout mã nguồn bằng BOT_PAT
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.BOT_PAT }}
 
-      # 2. Cài đặt Node.js & Prettier Plugins
-      - name: Set up Node.js & Install Prettier Plugins
+      # 2. Cài đặt Node.js và các công cụ Fix Cú pháp/Định dạng
+      - name: Set up Node.js & Install Linters & Formatters
         uses: actions/setup-node@v4
         with:
           node-version: '20'
 
-      - name: Install Prettier and Plugins
+      - name: Install Global Packages
         run: |
-          npm install -g prettier @prettier/plugin-php prettier-plugin-java
+          npm install -g prettier @prettier/plugin-php prettier-plugin-java eslint htmlhint
 
       # 3. Cài đặt Clang-Format cho C/C++
       - name: Install Clang-Format
@@ -38,29 +38,34 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y clang-format
 
-      # 4. Format đa ngôn ngữ
-      - name: Run Prettier
+      # 4. Tự động sửa lỗi cú pháp JavaScript/TypeScript (ESLint Auto-Fix)
+      - name: Run ESLint Auto-Fix
+        run: |
+          npx eslint --fix "**/*.{js,jsx,ts,tsx}" || true
+
+      # 5. Chạy Prettier định dạng toàn bộ mã nguồn
+      - name: Run Prettier Formatter
         run: |
           npx prettier --write "**/*.{js,jsx,ts,tsx,html,css,scss,php,java,json,md,yml,yaml}" || true
 
-      # 5. Format C/C++
+      # 6. Định dạng C/C++ với Clang-Format
       - name: Run Clang-Format for C/C++
         run: |
           find . -type f \( -name "*.c" -o -name "*.cpp" -o -name "*.h" -o -name "*.hpp" \) -not -path "./node_modules/*" -not -path "./vendor/*" | while read -r file; do
             clang-format -i -style=Google "$file"
           done
 
-      # 6. Kiểm tra thay đổi
+      # 7. Kiểm tra các file đã thay đổi
       - name: Check for changes
         id: verify-changed-files
         uses: tj-actions/changed-files@v44
 
-      # 7. Commit & Push dưới danh nghĩa Tài khoản phụ
+      # 8. Commit và Push các thay đổi bằng tài khoản phụ
       - name: Commit and push changes
         if: steps.verify-changed-files.outputs.any_changed == 'true'
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: '🤖 [Bot] Auto-format code structure (Prettier + Clang-Format)'
+          commit_message: "🤖 [Bot] Auto-format code & fix syntax errors"
           commit_user_name: 'protech-bot'
           commit_user_email: 'minhduc290613@proton.me'
           commit_author: 'protech-bot <minhduc290613@proton.me>'

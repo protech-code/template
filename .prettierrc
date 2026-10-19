@@ -10,8 +10,5 @@
   "bracketSpacing": true,
   "bracketSameLine": false,
   "arrowParens": "always",
-  "endOfLine": "lf",
-  "phpVersion": "8.2",
-  "trailingCommaPHP": true,
-  "braceStyle": "1 directive"
+  "endOfLine": "lf"
 }
