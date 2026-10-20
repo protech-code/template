@@ -38,16 +38,19 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y clang-format
 
-      # 4. Tự động sửa lỗi cú pháp JavaScript/TypeScript (ESLint Auto-Fix)
+      # 4. Tự động sửa lỗi cú pháp JavaScript/TypeScript (Dùng npx eslint kèm cấu hình inline chuẩn)
       - name: Run ESLint Auto-Fix
         run: |
+          # Kiểm tra nếu chưa có eslint config thì tạo nhanh một file config tối giản
+          if [ ! -f ".eslintrc.json" ] && [ ! -f "eslint.config.js" ]; then
+            echo '{"env": {"es6": true, "node": true, "browser": true}, "parserOptions": {"ecmaVersion": 2020}, "rules": {"semi": ["error", "always"], "quotes": ["error", "single"]}}' > .eslintrc.json
+          fi
           npx eslint --fix "**/*.{js,jsx,ts,tsx}" || true
 
       # 5. Chạy Prettier định dạng toàn bộ mã nguồn
       - name: Run Prettier Formatter
         run: |
           npx prettier --write "**/*.{js,jsx,ts,tsx,html,css,scss,php,java,json,md,yml,yaml}" || true
-
       # 6. Định dạng C/C++ với Clang-Format
       - name: Run Clang-Format for C/C++
         run: |
