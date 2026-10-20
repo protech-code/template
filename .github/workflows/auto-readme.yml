@@ -1,0 +1,96 @@
+name: 🤖 Smart Auto Update README
+
+on:
+  push:
+    branches:
+      - main
+      - master
+    paths-ignore:
+      - '.github/workflows/**'
+
+jobs:
+  update-readme:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Checkout mã nguồn bằng tài khoản phụ
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.BOT_PAT }}
+          fetch-depth: 0
+
+      # 2. Cài đặt Python
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      # 3. Python script cập nhật thông minh vào README.md cũ
+      - name: Smart Update README.md
+        run: |
+          python -c '
+          import os, glob
+
+          # Thu thập cây thư mục mới
+          ignore_dirs = {".git", ".github", "node_modules", "vendor", "__pycache__", "dist", "build", ".venv"}
+          files_list = []
+
+          for root, dirs, files in os.walk("."):
+              dirs[:] = [d for d in dirs if d not in ignore_dirs]
+              rel_path = os.path.relpath(root, ".")
+              
+              level = 0 if rel_path == "." else rel_path.count(os.sep) + 1
+              indent = "  " * level
+              if level > 0:
+                  files_list.append(f"{indent}📁 {os.path.basename(root)}/")
+
+              sub_indent = "  " * (level + 1)
+              for f in files[:8]:
+                  if not f.startswith(".") and f != "README.md":
+                      files_list.append(f"{sub_indent}📄 {f}")
+
+          tree_content = "\n".join(files_list[:35])
+          new_block = f"```text\n{tree_content}\n```"
+
+          # Đọc file README.md hiện tại (nếu có)
+          readme_path = "README.md"
+          if os.path.exists(readme_path):
+              with open(readme_path, "r", encoding="utf-8") as f:
+                  content = f.read()
+              
+              # Kiểm tra xem file cũ có chứa thẻ đánh dấu vùng tự động không
+              start_tag = "<!-- AUTO-TREE-START -->"
+              end_tag = "<!-- AUTO-TREE-END -->"
+              
+              if start_tag in content and end_tag in content:
+                  # Thay thế phần nằm giữa 2 thẻ
+                  parts = content.split(start_tag)
+                  before = parts[0]
+                  after = parts[1].split(end_tag)[1]
+                  updated_content = before + start_tag + "\n" + new_block + "\n" + end_tag + after
+              else:
+                  # Nếu chưa có thẻ, tự động nối thêm phần cây thư mục vào cuối file cũ
+                  updated_content = content + f"\n\n## 📂 Cấu trúc dự án tự động\n{start_tag}\n{new_block}\n{end_tag}\n"
+          else:
+              # Nếu chưa có file README nào, tạo mới hoàn toàn
+              updated_content = f"# 🚀 Project\n\n## 📂 Cấu trúc dự án\n<!-- AUTO-TREE-START -->\n{new_block}\n<!-- AUTO-TREE-END -->\n"
+
+          with open(readme_path, "w", encoding="utf-8") as f:
+              f.write(updated_content)
+          print("Đã cập nhật README.md thành công mà vẫn giữ nguyên nội dung cũ!")
+          '
+
+      # 4. Kiểm tra sự thay đổi
+      - name: Check for changes
+        id: verify-changed-files
+        uses: tj-actions/changed-files@v44
+
+      # 5. Commit và Push tự động
+      - name: Commit & Push README
+        if: steps.verify-changed-files.outputs.any_changed == 'true'
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "📝 [Bot] Auto-update README structure [skip ci]"
+          commit_user_name: "Protech BOT"
+          commit_user_email: "170188739+protech-bot@users.noreply.github.com"
