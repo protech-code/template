@@ -101,37 +101,37 @@ jobs:
                   # Nếu chưa có thẻ, nối thêm các phần thông tin đầy đủ vào cuối file cũ
                   updated_content = content + f"""
 
-## 🛠️ Công nghệ sử dụng
-{tech_badges}
+            ## 🛠️ Công nghệ sử dụng
+            {tech_badges}
 
-## 📂 Cấu trúc dự án
-{start_tag}
-{new_tree_block}
-{end_tag}
+            ## 📂 Cấu trúc dự án
+            {start_tag}
+            {new_tree_block}
+            {end_tag}
 
-## ⚙️ Hướng dẫn cài đặt & Chạy dự án
-{install_guide}
-"""
-          else:
-              # Nếu chưa có file README nào, tạo mới hoàn toàn với đầy đủ nội dung
-              updated_content = f"""# 🚀 {repo_name}
+            ## ⚙️ Hướng dẫn cài đặt & Chạy dự án
+            {install_guide}
+            """
+                    else:
+                        # Nếu chưa có file README nào, tạo mới hoàn toàn với đầy đủ nội dung
+                        updated_content = f"""# 🚀 {repo_name}
 
-> 🤖 *Được tạo và cập nhật tự động bởi GitHub Actions Bot.*
+            > 🤖 *Được tạo và cập nhật tự động bởi GitHub Actions Bot.*
 
-## 📌 Giới thiệu
-Chào mừng đến với **{repo_name}**! Dự án này chứa mã nguồn được quản lý tự động.
+            ## 📌 Giới thiệu
+            Chào mừng đến với **{repo_name}**! Dự án này chứa mã nguồn được quản lý tự động.
 
-## 🛠️ Công nghệ sử dụng
-{tech_badges}
+            ## 🛠️ Công nghệ sử dụng
+            {tech_badges}
 
-## 📂 Cấu trúc dự án
-{start_tag}
-{new_tree_block}
-{end_tag}
+            ## 📂 Cấu trúc dự án
+            {start_tag}
+            {new_tree_block}
+            {end_tag}
 
-## ⚙️ Hướng dẫn cài đặt & Chạy dự án
-{install_guide}
-"""
+            ## ⚙️ Hướng dẫn cài đặt & Chạy dự án
+            {install_guide}
+            """
 
           with open(readme_path, "w", encoding="utf-8") as f:
               f.write(updated_content)
