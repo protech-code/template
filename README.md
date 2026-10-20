@@ -32,3 +32,15 @@ Các ngôn ngữ và công nghệ xuất hiện trong dự án:
 ---
 
 _Cập nhật tự động bởi GitHub Actions Bot._
+
+
+## 📂 Cấu trúc dự án tự động
+<!-- AUTO-TREE-START -->
+```text
+  📁 test/
+    📄 index.html
+    📄 index.js
+    📄 test.c
+    📄 test.cpp
+```
+<!-- AUTO-TREE-END -->
