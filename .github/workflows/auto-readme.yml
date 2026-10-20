@@ -1,4 +1,4 @@
-name: 🤖 Smart Auto Update README
+name: 🤖 Smart Auto Full README Bot
 
 on:
   push:
@@ -24,18 +24,29 @@ jobs:
         with:
           python-version: '3.10'
 
-      - name: Run README Generator Script
+      - name: Run Full README Generator Script
         run: |
           python -c '
           import os, glob
 
+          repo_name = os.environ.get("GITHUB_REPOSITORY", "My-Project").split("/")[-1]
           ignore_dirs = {".git", ".github", "node_modules", "vendor", "__pycache__", "dist", "build", ".venv"}
+
+          # 1. Quét file và nhận diện công nghệ
           files_list = []
+          extensions = set()
+          has_package_json = False
+          has_docker = False
 
           for root, dirs, files in os.walk("."):
               dirs[:] = [d for d in dirs if d not in ignore_dirs]
               rel_path = os.path.relpath(root, ".")
               
+              if "package.json" in files:
+                  has_package_json = True
+              if "Dockerfile" in files:
+                  has_docker = True
+
               level = 0 if rel_path == "." else rel_path.count(os.sep) + 1
               indent = "  " * level
               if level > 0:
@@ -45,10 +56,33 @@ jobs:
               for f in files[:8]:
                   if not f.startswith(".") and f != "README.md":
                       files_list.append(f"{sub_indent}📄 {f}")
+                      ext = os.path.splitext(f)[1].lower()
+                      if ext:
+                          extensions.add(ext)
+
+          # Mapping ngôn ngữ & công nghệ
+          tech_map = {
+              ".js": "JavaScript", ".ts": "TypeScript", ".jsx": "React", ".tsx": "React / TS",
+              ".html": "HTML5", ".css": "CSS3", ".scss": "Sass", ".php": "PHP",
+              ".py": "Python", ".java": "Java", ".cpp": "C++", ".c": "C",
+              ".json": "JSON", ".yml": "YAML", ".md": "Markdown", ".sql": "SQL"
+          }
+          techs = sorted(list(set(tech_map[ext] for ext in extensions if ext in tech_map)))
+          tech_badges = " ".join([f"`{t}`" for t in techs]) if techs else "`Source Code`"
+
+          # Hướng dẫn chạy dựa trên file thực tế
+          install_guide = "Clone repository về máy và mở bằng trình soạn thảo mã nguồn tương ứng."
+          if has_package_json:
+              install_guide = "```bash\n# Cài đặt các gói phụ thuộc\nnpm install\n\n# Chạy ứng dụng\nnpm start\n```"
+          elif ".py" in extensions:
+              install_guide = "```bash\n# Cài đặt thư viện (nếu có)\npip install -r requirements.txt\n\n# Chạy ứng dụng\npython main.py\n```"
+          elif ".cpp" in extensions or ".c" in extensions:
+              install_guide = "```bash\n# Biên dịch và chạy file C/C++\ng++ test.cpp -o test\n./test\n```"
 
           tree_content = "\n".join(files_list[:35])
-          new_block = f"```text\n{tree_content}\n```"
+          new_tree_block = f"```text\n{tree_content}\n```"
 
+          # 2. Xây dựng nội dung tự động cập nhật
           readme_path = "README.md"
           if os.path.exists(readme_path):
               with open(readme_path, "r", encoding="utf-8") as f:
@@ -58,17 +92,50 @@ jobs:
               end_tag = "<!-- AUTO-TREE-END -->"
               
               if start_tag in content and end_tag in content:
+                  # Chỉ thay thế phần cây thư mục nếu có thẻ đánh dấu
                   parts = content.split(start_tag)
                   before = parts[0]
                   after = parts[1].split(end_tag)[1]
-                  updated_content = before + start_tag + "\n" + new_block + "\n" + end_tag + after
+                  updated_content = before + start_tag + "\n" + new_tree_block + "\n" + end_tag + after
               else:
-                  updated_content = content + f"\n\n## 📂 Cấu trúc dự án\n{start_tag}\n{new_block}\n{end_tag}\n"
+                  # Nếu chưa có thẻ, nối thêm các phần thông tin đầy đủ vào cuối file cũ
+                  updated_content = content + f"""
+
+## 🛠️ Công nghệ sử dụng
+{tech_badges}
+
+## 📂 Cấu trúc dự án
+{start_tag}
+{new_tree_block}
+{end_tag}
+
+## ⚙️ Hướng dẫn cài đặt & Chạy dự án
+{install_guide}
+"""
           else:
-              updated_content = f"# 🚀 Project\n\n## 📂 Cấu trúc dự án\n<!-- AUTO-TREE-START -->\n{new_block}\n<!-- AUTO-TREE-END -->\n"
+              # Nếu chưa có file README nào, tạo mới hoàn toàn với đầy đủ nội dung
+              updated_content = f"""# 🚀 {repo_name}
+
+> 🤖 *Được tạo và cập nhật tự động bởi GitHub Actions Bot.*
+
+## 📌 Giới thiệu
+Chào mừng đến với **{repo_name}**! Dự án này chứa mã nguồn được quản lý tự động.
+
+## 🛠️ Công nghệ sử dụng
+{tech_badges}
+
+## 📂 Cấu trúc dự án
+{start_tag}
+{new_tree_block}
+{end_tag}
+
+## ⚙️ Hướng dẫn cài đặt & Chạy dự án
+{install_guide}
+"""
 
           with open(readme_path, "w", encoding="utf-8") as f:
               f.write(updated_content)
+          print("Đã tạo/cập nhật README đầy đủ thành công!")
           '
 
       - name: Check for changes
@@ -79,7 +146,7 @@ jobs:
         if: steps.verify-changed-files.outputs.any_changed == 'true'
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: '📝 [Bot] Auto-update README structure [skip ci]'
-          commit_user_name: 'Protech BOT'
-          commit_user_email: '170188739+protech-bot@users.noreply.github.com'
+          commit_message: "📝 [Bot] Auto-update README with Tech & Structure [skip ci]"
+          commit_user_name: "Protech BOT"
+          commit_user_email: "170188739+protech-bot@users.noreply.github.com"
           push_options: '--force-with-lease'
