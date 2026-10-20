@@ -59,7 +59,6 @@ jobs:
           fi
           npx eslint --fix "**/*.{js,jsx,ts,tsx}" || true
 
-
       # Định dạng code Go bằng gofmt
       - name: Format Go files
         run: |
