@@ -36,6 +36,7 @@ _Cập nhật tự động bởi GitHub Actions Bot._
 ## 📂 Cấu trúc dự án tự động
 
 <!-- AUTO-TREE-START -->
+
 ```text
   📁 test/
     📄 index.html
@@ -45,4 +46,5 @@ _Cập nhật tự động bởi GitHub Actions Bot._
     📄 main.go
     📄 test.c
 ```
+
 <!-- AUTO-TREE-END -->
