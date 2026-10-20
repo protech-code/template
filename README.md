@@ -36,13 +36,13 @@ _Cập nhật tự động bởi GitHub Actions Bot._
 ## 📂 Cấu trúc dự án tự động
 
 <!-- AUTO-TREE-START -->
-
 ```text
   📁 test/
     📄 index.html
-    📄 index.js
-    📄 test.c
     📄 test.cpp
+    📄 index.js
+    📄 main.java
+    📄 main.go
+    📄 test.c
 ```
-
 <!-- AUTO-TREE-END -->
